@@ -1,0 +1,37 @@
+Authentication and User Management
+    POST /api/users/register - Register a new user
+    POST /api/users/login - Log in an existing user
+    GET /api/users/{userId} - Get the details of a specific user
+    PUT /api/users/{userId} - Update the details of a specific user
+    DELETE /api/users/{userId} - Delete a specific user
+Event Management
+    GET /api/events - Get a list of all events
+    GET /api/events/{eventId} - Get the details of a specific event
+    POST /api/events - Create a new event
+    PUT /api/events/{eventId} - Update the details of a specific event
+    DELETE /api/events/{eventId} - Delete a specific event
+Attendee Management
+    GET /api/events/{eventId}/attendees - Get the list of attendees for a specific event
+    POST /api/events/{eventId}/attendees - Add a new attendee to a specific event
+    DELETE /api/events/{eventId}/attendees/{attendeeId} - Remove an attendee from a specific event
+Search
+    GET /api/events/search - Search for events based on various criteria such as location, date, or keyword.
+Notification System
+    POST /api/events/{eventId}/notifications - Send a notification to all attendees of a specific event
+
+Event:
+    id: A unique identifier for the event
+    title: The title or name of the event
+    description: A description of the event
+    location: The location where the event will take place
+    startDateTime: The date and time when the event starts
+    endDateTime: The date and time when the event ends
+    createdBy: The user who created the event
+    createdDateTime: The date and time when the event was created
+    updatedBy: The user who last updated the event
+    updatedDateTime: The date and time when the event was last updated
+    attendees: A list of users who have RSVP'd to attend the event
+    maxAttendees: The maximum number of attendees allowed for the event
+    image: An image or photo associated with the event
+    category: The category or type of the event
+    price: The cost or price of attending the event
