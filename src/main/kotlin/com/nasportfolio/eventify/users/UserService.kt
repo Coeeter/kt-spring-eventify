@@ -7,6 +7,7 @@ import com.nasportfolio.eventify.users.exceptions.UserNotFoundException
 import com.nasportfolio.eventify.users.models.UserEntity
 import com.nasportfolio.eventify.users.models.requests.DeleteUserRequest
 import com.nasportfolio.eventify.users.models.requests.UpdateUserRequest
+import com.nasportfolio.eventify.users.models.responses.UserDeletedResponse
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.security.core.authority.SimpleGrantedAuthority
 import org.springframework.security.core.userdetails.User
@@ -82,7 +83,7 @@ class UserService(
     fun deleteUser(
         deleteUserRequest: DeleteUserRequest,
         securityUser: User
-    ) {
+    ): UserDeletedResponse {
         val user = getUserByEmail(securityUser.username)
         val isValidPassword = BCryptPasswordEncoder(
             securityProperties.strength
@@ -93,7 +94,9 @@ class UserService(
         if (!isValidPassword) {
             throw InvalidCredentialsException("Invalid password given")
         }
+        user.imageUrl?.let { imageService.deleteImage(it) }
         userRepo.deleteById(user.id)
+        return UserDeletedResponse(user.id)
     }
 
     fun uploadImage(file: MultipartFile, securityUser: User): UserEntity {

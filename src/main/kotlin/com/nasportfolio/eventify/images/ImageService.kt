@@ -9,8 +9,11 @@ import java.util.*
 
 @Service
 class ImageService {
+    private val bucket by lazy {
+        StorageClient.getInstance().bucket()
+    }
+
     fun uploadImage(file: MultipartFile): String {
-        val bucket = StorageClient.getInstance().bucket()
         val extension = file.originalFilename?.takeLastWhile { it != '.' } ?: "png"
         val name = UUID.randomUUID()
             .toString()
@@ -24,7 +27,6 @@ class ImageService {
     }
 
     fun deleteImage(url: String): Boolean {
-        val bucket = StorageClient.getInstance().bucket()
         return bucket[extractKeyFromUrl(url)].delete()
     }
 
@@ -35,7 +37,6 @@ class ImageService {
     }
 
     private fun buildImageUrl(name: String): String {
-        val bucket = StorageClient.getInstance().bucket()
         return "https://firebasestorage.googleapis.com/v0/b/${bucket.name}/o/${name}?alt=media"
     }
 }

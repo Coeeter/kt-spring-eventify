@@ -6,6 +6,7 @@ import org.springframework.validation.FieldError
 import org.springframework.web.bind.MethodArgumentNotValidException
 import org.springframework.web.bind.annotation.ControllerAdvice
 import org.springframework.web.bind.annotation.ExceptionHandler
+import org.springframework.web.multipart.MultipartException
 
 @ControllerAdvice
 class ExceptionHandler {
@@ -30,6 +31,18 @@ class ExceptionHandler {
                     val error = it as FieldError
                     error.field to error.defaultMessage.toString()
                 }
+            ),
+            HttpStatus.BAD_REQUEST
+        )
+    }
+
+    @ExceptionHandler(MultipartException::class)
+    fun handleException(exception: MultipartException): ResponseEntity<ErrorFieldResponse> {
+        return ResponseEntity(
+            ErrorFieldResponse(
+                message = "Invalid fields provided",
+                status = HttpStatus.BAD_REQUEST.value(),
+                fields = mapOf("image" to "Image is required")
             ),
             HttpStatus.BAD_REQUEST
         )

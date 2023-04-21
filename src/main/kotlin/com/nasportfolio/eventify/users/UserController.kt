@@ -3,6 +3,7 @@ package com.nasportfolio.eventify.users
 import com.nasportfolio.eventify.users.models.UserEntity
 import com.nasportfolio.eventify.users.models.requests.DeleteUserRequest
 import com.nasportfolio.eventify.users.models.requests.UpdateUserRequest
+import com.nasportfolio.eventify.users.models.responses.UserDeletedResponse
 import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.security.core.userdetails.User
 import org.springframework.web.bind.annotation.*
@@ -41,7 +42,7 @@ class UserController(
     fun deleteUser(
         @Valid @RequestBody request: DeleteUserRequest,
         @AuthenticationPrincipal user: User
-    ) {
+    ): UserDeletedResponse {
         return userService.deleteUser(request, user)
     }
 
