@@ -1,5 +1,6 @@
 package com.nasportfolio.eventify.events
 
+import com.nasportfolio.eventify.events.models.dtos.PageDto
 import com.nasportfolio.eventify.events.models.entities.EventEntity
 import com.nasportfolio.eventify.events.models.requests.CreateEventRequest
 import org.springframework.security.core.annotation.AuthenticationPrincipal
@@ -14,8 +15,11 @@ class EventsController(
 ) {
 
     @GetMapping
-    fun getAllEvents(): List<EventEntity> {
-        return eventsService.getAllEvents()
+    fun getAllEvents(
+        @RequestParam("page") page: Int?,
+        @RequestParam("size") size: Int?
+    ): PageDto<EventEntity> {
+        return eventsService.getAllEvents((page ?: 1) - 1, size ?: 10)
     }
 
     @GetMapping("/{id}")

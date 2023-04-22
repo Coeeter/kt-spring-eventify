@@ -8,19 +8,13 @@ import com.nasportfolio.eventify.users.models.UserEntity
 import com.nasportfolio.eventify.users.models.requests.DeleteUserRequest
 import com.nasportfolio.eventify.users.models.requests.UpdateUserRequest
 import com.nasportfolio.eventify.users.models.responses.UserDeletedResponse
-import org.springframework.core.MethodParameter
 import org.springframework.data.repository.findByIdOrNull
-import org.springframework.security.core.authority.SimpleGrantedAuthority
 import org.springframework.security.core.userdetails.User
 import org.springframework.security.core.userdetails.UserDetails
 import org.springframework.security.core.userdetails.UserDetailsService
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
 import org.springframework.security.web.util.UrlUtils
 import org.springframework.stereotype.Service
-import org.springframework.validation.BeanPropertyBindingResult
-import org.springframework.web.bind.MethodArgumentNotValidException
-import org.springframework.web.multipart.MultipartFile
-import java.net.URL
 
 @Service
 class UserService(

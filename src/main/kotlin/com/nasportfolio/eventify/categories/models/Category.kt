@@ -1,12 +1,8 @@
 package com.nasportfolio.eventify.categories.models
 
 import com.nasportfolio.eventify.events.models.entities.EventEntity
-import java.util.UUID
-import javax.persistence.Entity
-import javax.persistence.Id
-import javax.persistence.JoinColumn
-import javax.persistence.JoinTable
-import javax.persistence.ManyToMany
+import java.util.*
+import javax.persistence.*
 
 @Entity
 data class Category(

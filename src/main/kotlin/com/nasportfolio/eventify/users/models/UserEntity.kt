@@ -32,7 +32,7 @@ data class UserEntity(
     val attendingEvents: List<EventEntity> = emptyList(),
     @JsonIgnore
     @OneToMany(
-        mappedBy = "creator",
+        mappedBy = "organiser",
         cascade = [CascadeType.ALL],
         orphanRemoval = true,
     )

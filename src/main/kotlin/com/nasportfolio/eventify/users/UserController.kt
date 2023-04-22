@@ -7,7 +7,6 @@ import com.nasportfolio.eventify.users.models.responses.UserDeletedResponse
 import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.security.core.userdetails.User
 import org.springframework.web.bind.annotation.*
-import org.springframework.web.multipart.MultipartFile
 import java.util.*
 import javax.validation.Valid
 

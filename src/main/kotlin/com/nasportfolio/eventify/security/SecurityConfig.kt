@@ -3,15 +3,12 @@ package com.nasportfolio.eventify.security
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.nasportfolio.eventify.exceptions.ErrorResponse
 import com.nasportfolio.eventify.security.jwt.JwtFilter
-import com.nasportfolio.eventify.users.UserService
 import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import org.springframework.security.authentication.AuthenticationManager
-import org.springframework.security.authentication.AuthenticationProvider
-import org.springframework.security.authentication.dao.DaoAuthenticationProvider
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity
 import org.springframework.security.config.annotation.web.builders.HttpSecurity
