@@ -46,16 +46,8 @@ class UserController(
         return userService.deleteUser(request, user)
     }
 
-    @PostMapping("/images")
-    fun uploadImage(
-        @RequestParam("image") file: MultipartFile,
-        @AuthenticationPrincipal user: User
-    ): UserEntity {
-        return userService.uploadImage(file, user)
-    }
-
     @DeleteMapping("/images")
-    fun uploadImage(
+    fun deleteImage(
         @AuthenticationPrincipal user: User
     ): UserEntity {
         return userService.deleteImage( user)

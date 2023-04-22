@@ -1,6 +1,5 @@
 package com.nasportfolio.eventify.auth.models.requests
 
-import com.nasportfolio.eventify.users.models.Role
 import org.hibernate.validator.constraints.Length
 import javax.validation.constraints.Email
 import javax.validation.constraints.NotBlank
@@ -14,5 +13,4 @@ data class RegisterRequest(
     @field:NotBlank(message = "Email address is required")
     @field:Email(message = "Invalid email address")
     val email: String,
-    val role: Role
 )

@@ -12,7 +12,6 @@ import com.nasportfolio.eventify.users.exceptions.UserNotFoundException
 import com.nasportfolio.eventify.users.models.UserEntity
 import org.springframework.security.authentication.AuthenticationManager
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
-import org.springframework.security.core.authority.SimpleGrantedAuthority
 import org.springframework.security.core.userdetails.User
 import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.stereotype.Service
@@ -52,11 +51,9 @@ class AuthService(
                 name = registerRequest.name,
                 email = registerRequest.email,
                 password = passwordEncoder.encode(registerRequest.password),
-                role = registerRequest.role
             )
         ).run {
-            val authorities = mutableListOf(SimpleGrantedAuthority(role.name))
-            User(email, password, authorities)
+            User(email, password, mutableListOf())
         }
         return TokenResponse(
             jwtService.generateJwt(user)

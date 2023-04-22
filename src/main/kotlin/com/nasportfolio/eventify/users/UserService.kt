@@ -8,14 +8,19 @@ import com.nasportfolio.eventify.users.models.UserEntity
 import com.nasportfolio.eventify.users.models.requests.DeleteUserRequest
 import com.nasportfolio.eventify.users.models.requests.UpdateUserRequest
 import com.nasportfolio.eventify.users.models.responses.UserDeletedResponse
+import org.springframework.core.MethodParameter
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.security.core.authority.SimpleGrantedAuthority
 import org.springframework.security.core.userdetails.User
 import org.springframework.security.core.userdetails.UserDetails
 import org.springframework.security.core.userdetails.UserDetailsService
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
+import org.springframework.security.web.util.UrlUtils
 import org.springframework.stereotype.Service
+import org.springframework.validation.BeanPropertyBindingResult
+import org.springframework.web.bind.MethodArgumentNotValidException
 import org.springframework.web.multipart.MultipartFile
+import java.net.URL
 
 @Service
 class UserService(
@@ -56,9 +61,20 @@ class UserService(
         securityUser: User
     ): UserEntity {
         val user = getUserByEmail(securityUser.username)
+        updateUserRequest.name?.let {
+            if (it.isNotBlank()) return@let
+            throw InvalidCredentialsException("Name is required")
+        }
+        updateUserRequest.image?.let {
+            if (it.isBlank() || !UrlUtils.isAbsoluteUrl(it)) {
+                throw InvalidCredentialsException("Invalid image provided")
+            }
+            user.imageUrl?.let { url -> imageService.deleteImage(url) }
+        }
         return saveUser(
             user.copy(
-                name = updateUserRequest.name,
+                name = updateUserRequest.name ?: user.name,
+                imageUrl = updateUserRequest.image ?: user.imageUrl
             )
         )
     }
@@ -71,9 +87,7 @@ class UserService(
             User(
                 user.email,
                 user.password,
-                mutableListOf(
-                    SimpleGrantedAuthority(user.role.name)
-                )
+                mutableListOf()
             )
         } catch (e: Exception) {
             null
@@ -97,13 +111,6 @@ class UserService(
         user.imageUrl?.let { imageService.deleteImage(it) }
         userRepo.deleteById(user.id)
         return UserDeletedResponse(user.id)
-    }
-
-    fun uploadImage(file: MultipartFile, securityUser: User): UserEntity {
-        val url = imageService.uploadImage(file)
-        val user = getUserByEmail(securityUser.username)
-        user.imageUrl?.let { imageService.deleteImage(it) }
-        return saveUser(user.copy(imageUrl = url))
     }
 
     fun deleteImage(securityUser: User): UserEntity {

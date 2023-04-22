@@ -2,6 +2,7 @@ package com.nasportfolio.eventify.users.models
 
 import com.fasterxml.jackson.annotation.JsonIgnore
 import com.nasportfolio.eventify.auth.models.entities.PasswordResetTokenEntity
+import com.nasportfolio.eventify.events.models.entities.EventEntity
 import org.springframework.data.annotation.CreatedDate
 import java.util.*
 import javax.persistence.*
@@ -18,8 +19,6 @@ data class UserEntity(
     val password: String,
     @CreatedDate
     val createdAt: Date = Date(),
-    @Enumerated(EnumType.STRING)
-    val role: Role,
     @JsonIgnore
     @OneToMany(
         mappedBy = "user",
@@ -28,9 +27,14 @@ data class UserEntity(
     )
     val passwordResetTokens: List<PasswordResetTokenEntity> = emptyList(),
     val imageUrl: String? = null,
+    @JsonIgnore
+    @ManyToMany(mappedBy = "attendees")
+    val attendingEvents: List<EventEntity> = emptyList(),
+    @JsonIgnore
+    @OneToMany(
+        mappedBy = "creator",
+        cascade = [CascadeType.ALL],
+        orphanRemoval = true,
+    )
+    val createdEvents: List<EventEntity> = emptyList()
 )
-
-enum class Role {
-    ADMIN,
-    ATTENDEE
-}
