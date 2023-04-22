@@ -3,6 +3,7 @@ package com.nasportfolio.eventify.events
 import com.nasportfolio.eventify.categories.CategoryService
 import com.nasportfolio.eventify.events.exceptions.EventNotFoundException
 import com.nasportfolio.eventify.events.exceptions.InvalidEventException
+import com.nasportfolio.eventify.events.exceptions.InvalidPageException
 import com.nasportfolio.eventify.events.models.dtos.PageDto
 import com.nasportfolio.eventify.events.models.entities.EventEntity
 import com.nasportfolio.eventify.events.models.entities.LocationEntity
@@ -21,13 +22,12 @@ class EventsService(
     private val categoryService: CategoryService,
 ) {
     fun getAllEvents(page: Int, size: Int): PageDto<EventEntity> {
-        val pagination = eventsRepo.findAll(PageRequest.of(page, size))
-        return PageDto(
-            content = pagination.content,
-            currentPage = pagination.number + 1,
-            totalItems = pagination.totalElements,
-            totalPages = pagination.totalPages
-        )
+        try {
+            val page = eventsRepo.findAll(PageRequest.of(page, size))
+            return PageDto.fromPage(page)
+        } catch (e: IllegalArgumentException) {
+            throw InvalidPageException("Invalid page or size given")
+        }
     }
 
     fun getEventById(id: String): EventEntity {
