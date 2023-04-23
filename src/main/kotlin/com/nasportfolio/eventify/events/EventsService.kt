@@ -1,17 +1,17 @@
 package com.nasportfolio.eventify.events
 
 import com.nasportfolio.eventify.categories.CategoryService
+import com.nasportfolio.eventify.dtos.PageDto
+import com.nasportfolio.eventify.dtos.PageDto.Companion.DEFAULT_SIZE
 import com.nasportfolio.eventify.events.exceptions.EventNotFoundException
 import com.nasportfolio.eventify.events.exceptions.InvalidEventException
 import com.nasportfolio.eventify.events.exceptions.InvalidPageException
-import com.nasportfolio.eventify.dtos.PageDto
-import com.nasportfolio.eventify.dtos.PageDto.Companion.DEFAULT_SIZE
 import com.nasportfolio.eventify.events.models.entities.EventEntity
 import com.nasportfolio.eventify.events.models.entities.LocationEntity
 import com.nasportfolio.eventify.events.models.requests.CreateEventRequest
+import com.nasportfolio.eventify.events.models.requests.FilterRequestParam
 import com.nasportfolio.eventify.users.UserService
 import org.springframework.data.domain.PageRequest
-import org.springframework.data.domain.Sort
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.security.core.userdetails.User
 import org.springframework.stereotype.Service
@@ -23,16 +23,16 @@ class EventsService(
     private val userService: UserService,
     private val categoryService: CategoryService,
 ) {
-    fun getAllEvents(query: String?, page: Int?, size: Int?): PageDto<EventEntity> {
+    fun getAllEvents(page: Int?, size: Int?): PageDto<EventEntity> {
         try {
-            val page = eventsRepo.searchEvents(
-                query ?: "",
-                PageRequest.of(
-                    (page ?: 1) - 1,
-                    size ?: DEFAULT_SIZE
+            return PageDto.fromPage(
+                eventsRepo.findByEndDateAfter(
+                    pageable = PageRequest.of(
+                        (page ?: 1) - 1,
+                        size ?: DEFAULT_SIZE
+                    )
                 )
             )
-            return PageDto.fromPage(page)
         } catch (e: IllegalArgumentException) {
             throw InvalidPageException("Invalid page or size given")
         }
@@ -40,6 +40,23 @@ class EventsService(
 
     fun getEventById(id: String): EventEntity {
         return eventsRepo.findByIdOrNull(id) ?: throw EventNotFoundException()
+    }
+
+    fun filterEvents(
+        filterRequestParam: FilterRequestParam?,
+        page: Int?,
+        size: Int?
+    ): PageDto<EventEntity> {
+        val pageRequest = PageRequest.of(
+            (page ?: 1) - 1,
+            size ?: DEFAULT_SIZE
+        )
+        return PageDto.fromPage(
+            page = eventsRepo.filterEvents(
+                filterRequestParam,
+                pageRequest
+            )
+        )
     }
 
     fun createEvent(

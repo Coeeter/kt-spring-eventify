@@ -8,7 +8,7 @@ class CategoryService(
     private val categoryRepo: CategoryRepo
 ) {
     fun getCategoriesByNames(categories: List<String>): List<Category> {
-        return categoryRepo.findByNameWithList(categories)
+        return categoryRepo.findByNameIn(categories)
     }
 
 }

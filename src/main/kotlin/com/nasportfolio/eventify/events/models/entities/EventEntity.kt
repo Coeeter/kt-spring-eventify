@@ -37,5 +37,4 @@ class EventEntity(
     val updatedAt: Date = Date(),
     @ManyToMany(mappedBy = "events")
     val categories: List<Category> = emptyList(),
-) {
-}
+)

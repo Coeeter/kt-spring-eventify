@@ -5,9 +5,9 @@ Authentication and User Management
     PUT /api/users/{userId} - Update the details of a specific user √
     DELETE /api/users/{userId} - Delete a specific user √
 Event Management
-    GET /api/events - Get a list of all events
-    GET /api/events/{eventId} - Get the details of a specific event
-    POST /api/events - Create a new event
+    GET /api/events - Get a list of all events √
+    GET /api/events/{eventId} - Get the details of a specific event √
+    POST /api/events - Create a new event √
     PUT /api/events/{eventId} - Update the details of a specific event
     DELETE /api/events/{eventId} - Delete a specific event
 Attendee Management

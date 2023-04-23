@@ -2,7 +2,7 @@ package com.nasportfolio.eventify.dtos
 
 import org.springframework.data.domain.Page
 
-data class PageDto<T>(
+data class PageDto<T> private constructor(
     val currentPage: Int,
     val totalItems: Long,
     val totalPages: Int,
