@@ -1,5 +1,8 @@
 package com.nasportfolio.eventify.users
 
+import com.nasportfolio.eventify.dtos.PageDto
+import com.nasportfolio.eventify.dtos.PageDto.Companion.DEFAULT_SIZE
+import com.nasportfolio.eventify.events.exceptions.InvalidPageException
 import com.nasportfolio.eventify.images.ImageService
 import com.nasportfolio.eventify.security.SecurityProperties
 import com.nasportfolio.eventify.users.exceptions.InvalidCredentialsException
@@ -8,6 +11,7 @@ import com.nasportfolio.eventify.users.models.UserEntity
 import com.nasportfolio.eventify.users.models.requests.DeleteUserRequest
 import com.nasportfolio.eventify.users.models.requests.UpdateUserRequest
 import com.nasportfolio.eventify.users.models.responses.UserDeletedResponse
+import org.springframework.data.domain.PageRequest
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.security.core.userdetails.User
 import org.springframework.security.core.userdetails.UserDetails
@@ -22,8 +26,20 @@ class UserService(
     private val securityProperties: SecurityProperties,
     private val imageService: ImageService
 ) : UserDetailsService {
-    fun getAllUsers(): List<UserEntity> {
-        return userRepo.findAll()
+    fun getUsers(name: String?, page: Int?, size: Int?): PageDto<UserEntity> {
+        try {
+            return PageDto.fromPage(
+                page = userRepo.searchByNameContainingIgnoreCase(
+                    name = name ?: "",
+                    pageable = PageRequest.of(
+                        (page ?: 1) - 1,
+                        size ?: DEFAULT_SIZE
+                    )
+                )
+            )
+        } catch (e: IllegalArgumentException) {
+            throw InvalidPageException("Invalid page or size given")
+        }
     }
 
     fun getUserById(id: String): UserEntity {
@@ -40,10 +56,6 @@ class UserService(
         } catch (e: Exception) {
             throw UserNotFoundException("User with email $email not found")
         }
-    }
-
-    fun searchUsersByName(name: String): List<UserEntity> {
-        return userRepo.searchUsersByName(name)
     }
 
     fun saveUser(userEntity: UserEntity): UserEntity {

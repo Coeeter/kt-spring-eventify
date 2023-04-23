@@ -1,4 +1,4 @@
-package com.nasportfolio.eventify.events.models.dtos
+package com.nasportfolio.eventify.dtos
 
 import org.springframework.data.domain.Page
 
@@ -9,6 +9,8 @@ data class PageDto<T>(
     val content: List<T>
 ) {
     companion object {
+        const val DEFAULT_SIZE = 20
+
         fun <T> fromPage(page: Page<T>): PageDto<T> {
             return PageDto(
                 currentPage = page.number + 1,

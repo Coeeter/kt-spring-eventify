@@ -1,5 +1,6 @@
 package com.nasportfolio.eventify.users
 
+import com.nasportfolio.eventify.dtos.PageDto
 import com.nasportfolio.eventify.users.models.UserEntity
 import com.nasportfolio.eventify.users.models.requests.DeleteUserRequest
 import com.nasportfolio.eventify.users.models.requests.UpdateUserRequest
@@ -17,11 +18,11 @@ class UserController(
 ) {
     @GetMapping
     fun getAllUsers(
-        @RequestParam("name") name: String?
-    ): List<UserEntity> {
-        return name?.let {
-            userService.searchUsersByName(it)
-        } ?: userService.getAllUsers()
+        @RequestParam("name") name: String?,
+        @RequestParam("page") page: Int?,
+        @RequestParam("size") size: Int?
+    ): PageDto<UserEntity> {
+        return userService.getUsers(name, page, size)
     }
 
     @GetMapping("/{id}")
@@ -49,6 +50,6 @@ class UserController(
     fun deleteImage(
         @AuthenticationPrincipal user: User
     ): UserEntity {
-        return userService.deleteImage( user)
+        return userService.deleteImage(user)
     }
 }
