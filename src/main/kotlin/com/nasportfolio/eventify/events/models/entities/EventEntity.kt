@@ -7,7 +7,7 @@ import java.util.*
 import javax.persistence.*
 
 @Entity(name = "events")
-class EventEntity(
+data class EventEntity(
     @Id
     val id: String = UUID.randomUUID().toString(),
     val title: String,
@@ -29,7 +29,6 @@ class EventEntity(
     )
     val attendees: List<UserEntity> = emptyList(),
     val maxAttendees: Int,
-    val attendeesCount: Int = attendees.size,
     @ManyToOne
     @JoinColumn(name = "creator_id")
     val organiser: UserEntity,

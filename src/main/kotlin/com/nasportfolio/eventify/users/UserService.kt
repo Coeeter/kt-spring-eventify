@@ -3,6 +3,7 @@ package com.nasportfolio.eventify.users
 import com.nasportfolio.eventify.dtos.PageDto
 import com.nasportfolio.eventify.dtos.PageDto.Companion.DEFAULT_SIZE
 import com.nasportfolio.eventify.events.exceptions.InvalidPageException
+import com.nasportfolio.eventify.events.models.entities.EventEntity
 import com.nasportfolio.eventify.images.ImageService
 import com.nasportfolio.eventify.security.SecurityProperties
 import com.nasportfolio.eventify.users.exceptions.InvalidCredentialsException
@@ -11,7 +12,9 @@ import com.nasportfolio.eventify.users.models.UserEntity
 import com.nasportfolio.eventify.users.models.requests.DeleteUserRequest
 import com.nasportfolio.eventify.users.models.requests.UpdateUserRequest
 import com.nasportfolio.eventify.users.models.responses.UserDeletedResponse
+import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageRequest
+import org.springframework.data.domain.Pageable
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.security.core.userdetails.User
 import org.springframework.security.core.userdetails.UserDetails
@@ -123,5 +126,15 @@ class UserService(
         val user = getUserByEmail(securityUser.username)
         user.imageUrl?.let { imageService.deleteImage(it) }
         return saveUser(user.copy(imageUrl = null))
+    }
+
+    fun getAttendeesOfEvent(
+        eventEntity: EventEntity,
+        pageable: Pageable
+    ): Page<UserEntity> {
+        return userRepo.findByAttendingEventsContaining(
+            eventEntity,
+            pageable
+        )
     }
 }

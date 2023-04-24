@@ -77,33 +77,30 @@ private fun filterEventsSpecification(filterRequestParam: FilterRequestParam?): 
                     criteriaBuilder.lessThanOrEqualTo(root.get("price"), it)
                 )
             }
-            latitude?.let { lat ->
-                longitude?.let { lon ->
-                    radius?.let { radius ->
-                        val location = root.get<LocationEntity>("location")
-                        val point = criteriaBuilder.function(
-                            "POINT",
-                            Point::class.java,
-                            location.get<Double>("longitude"),
-                            location.get<Double>("latitude")
-                        )
-                        val distance = criteriaBuilder.function(
-                            "ST_DISTANCE_SPHERE",
-                            Double::class.java,
-                            point,
-                            criteriaBuilder.function(
-                                "POINT",
-                                Point::class.java,
-                                criteriaBuilder.literal(lon),
-                                criteriaBuilder.literal(lat)
-                            )
-                        )
-                        predicate = criteriaBuilder.and(
-                            predicate,
-                            criteriaBuilder.le(distance, radius * 1000)
-                        )
-                    }
-                }
+            if (latitude != null && longitude != null) {
+                val radius = radius ?: 5.0
+                val location = root.get<LocationEntity>("location")
+                val point = criteriaBuilder.function(
+                    "POINT",
+                    Point::class.java,
+                    location.get<Double>("longitude"),
+                    location.get<Double>("latitude")
+                )
+                val distance = criteriaBuilder.function(
+                    "ST_DISTANCE_SPHERE",
+                    Double::class.java,
+                    point,
+                    criteriaBuilder.function(
+                        "POINT",
+                        Point::class.java,
+                        criteriaBuilder.literal(longitude),
+                        criteriaBuilder.literal(latitude)
+                    )
+                )
+                predicate = criteriaBuilder.and(
+                    predicate,
+                    criteriaBuilder.le(distance, radius * 1000)
+                )
             }
             postalCode?.let {
                 predicate = criteriaBuilder.and(

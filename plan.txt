@@ -11,11 +11,11 @@ Event Management
     PUT /api/events/{eventId} - Update the details of a specific event
     DELETE /api/events/{eventId} - Delete a specific event
 Attendee Management
-    GET /api/events/{eventId}/attendees - Get the list of attendees for a specific event
-    POST /api/events/{eventId}/attendees - Add a new attendee to a specific event
-    DELETE /api/events/{eventId}/attendees/{attendeeId} - Remove an attendee from a specific event
+    GET /api/events/{eventId}/attendees - Get the list of attendees for a specific event √
+    POST /api/events/{eventId}/attendees - Add a new attendee to a specific event √
+    DELETE /api/events/{eventId}/attendees/{attendeeId} - Remove an attendee from a specific event √
 Search
-    GET /api/events/search - Search for events based on various criteria such as location, date, or keyword.
+    GET /api/events/search - Search for events based on various criteria such as location, date, or keyword. √
 Notification System
     POST /api/events/{eventId}/notifications - Send a notification to all attendees of a specific event
 

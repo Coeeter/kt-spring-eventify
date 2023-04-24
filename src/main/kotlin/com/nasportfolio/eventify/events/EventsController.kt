@@ -5,6 +5,7 @@ import com.nasportfolio.eventify.events.models.entities.EventEntity
 import com.nasportfolio.eventify.events.models.requests.CreateEventRequest
 import com.nasportfolio.eventify.events.models.requests.FilterRequestParam
 import com.nasportfolio.eventify.events.models.requests.IncludeRequestParam
+import com.nasportfolio.eventify.users.models.UserEntity
 import org.springframework.format.annotation.DateTimeFormat
 import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.security.core.userdetails.User
@@ -29,6 +30,15 @@ class EventsController(
     @GetMapping("/{id}")
     fun getEventById(@PathVariable id: String): EventEntity {
         return eventsService.getEventById(id)
+    }
+
+    @GetMapping("/{id}/attendees")
+    fun getAttendees(
+        @PathVariable id: String,
+        @RequestParam page: Int?,
+        @RequestParam size: Int?
+    ): PageDto<UserEntity> {
+        return eventsService.getAttendees(id, page, size)
     }
 
     @GetMapping("/search")
@@ -78,5 +88,21 @@ class EventsController(
         @AuthenticationPrincipal user: User
     ): EventEntity {
         return eventsService.createEvent(request, user)
+    }
+
+    @PostMapping("/{id}/attendees")
+    fun createAttendee(
+        @PathVariable id: String,
+        @AuthenticationPrincipal user: User
+    ) {
+        return eventsService.createAttendee(id, user)
+    }
+
+    @DeleteMapping("/{id}/attendees")
+    fun deleteAttendee(
+        @PathVariable id: String,
+        @AuthenticationPrincipal user: User
+    ) {
+        return eventsService.deleteAttendee(id, user)
     }
 }
