@@ -18,6 +18,7 @@ import javax.persistence.criteria.Predicate
 @Repository
 interface EventsRepo : JpaRepository<EventEntity, String>, JpaSpecificationExecutor<EventEntity> {
     fun findByEndDateAfter(ends: Date = Date(), pageable: Pageable): Page<EventEntity>
+    fun findByCategoriesIn(categories: List<Category>, pageable: Pageable): Page<EventEntity>
 }
 
 fun EventsRepo.filterEvents(
@@ -121,12 +122,15 @@ private fun filterEventsSpecification(filterRequestParam: FilterRequestParam?): 
                 )
             }
             categories?.let { categories ->
-                predicate = criteriaBuilder.and(
-                    predicate,
-                    root.join<EventEntity, Category>("categories")
-                        .get<String>("name")
-                        .`in`(categories)
-                )
+                categories.forEach { category ->
+                    predicate = criteriaBuilder.and(
+                        predicate,
+                        criteriaBuilder.equal(
+                            root.join<EventEntity, Category>("categories").get<String>("name"),
+                            category
+                        )
+                    )
+                }
             }
             include?.let { includes ->
                 if (includes.contains(IncludeRequestParam.all)) return@let

@@ -1,5 +1,6 @@
 package com.nasportfolio.eventify.events
 
+import com.nasportfolio.eventify.categories.models.requests.CategoryRequest
 import com.nasportfolio.eventify.dtos.PageDto
 import com.nasportfolio.eventify.events.models.entities.EventEntity
 import com.nasportfolio.eventify.events.models.requests.CreateEventRequest
@@ -88,6 +89,22 @@ class EventsController(
         @AuthenticationPrincipal user: User
     ): EventEntity {
         return eventsService.createEvent(request, user)
+    }
+
+    @PostMapping("/{id}/categories")
+    fun addCategoryToEvent(
+        @PathVariable id: String,
+        @RequestBody categoryRequest: CategoryRequest
+    ): EventEntity {
+        return eventsService.addCategoryToEvent(id, categoryRequest)
+    }
+
+    @DeleteMapping("/{id}/categories/{categoryName}")
+    fun deleteCategoryFromEvent(
+        @PathVariable id: String,
+        @PathVariable categoryName: String
+    ): EventEntity {
+        return eventsService.deleteCategoryFromEvent(id, categoryName)
     }
 
     @PostMapping("/{id}/attendees")

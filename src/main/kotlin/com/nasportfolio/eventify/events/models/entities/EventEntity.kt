@@ -34,6 +34,11 @@ data class EventEntity(
     val organiser: UserEntity,
     val createdAt: Date = Date(),
     val updatedAt: Date = Date(),
-    @ManyToMany(mappedBy = "events")
+    @ManyToMany
+    @JoinTable(
+        name = "event_category",
+        joinColumns = [JoinColumn(name = "event_id")],
+        inverseJoinColumns = [JoinColumn(name = "category_id")],
+    )
     val categories: List<Category> = emptyList(),
 )

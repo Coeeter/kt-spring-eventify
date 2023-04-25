@@ -1,9 +1,12 @@
 package com.nasportfolio.eventify.events
 
 import com.nasportfolio.eventify.categories.CategoryService
+import com.nasportfolio.eventify.categories.exceptions.CategoryNotFoundException
+import com.nasportfolio.eventify.categories.models.requests.CategoryRequest
 import com.nasportfolio.eventify.dtos.PageDto
 import com.nasportfolio.eventify.dtos.PageDto.Companion.DEFAULT_SIZE
 import com.nasportfolio.eventify.dtos.PageDto.Companion.fromPage
+import com.nasportfolio.eventify.events.exceptions.EventMaxAttendeeReached
 import com.nasportfolio.eventify.events.exceptions.EventNotFoundException
 import com.nasportfolio.eventify.events.exceptions.InvalidEventException
 import com.nasportfolio.eventify.events.exceptions.InvalidPageException
@@ -13,7 +16,6 @@ import com.nasportfolio.eventify.events.models.requests.CreateEventRequest
 import com.nasportfolio.eventify.events.models.requests.FilterRequestParam
 import com.nasportfolio.eventify.users.UserService
 import com.nasportfolio.eventify.users.models.UserEntity
-import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.security.core.userdetails.User
@@ -121,6 +123,7 @@ class EventsService(
 
     fun createAttendee(id: String, user: User) {
         val event = eventsRepo.findByIdOrNull(id) ?: throw EventNotFoundException()
+        if (event.attendees.size == event.maxAttendees) throw EventMaxAttendeeReached()
         val userEntity = userService.getUserByEmail(user.username)
         eventsRepo.save(
             event.copy(
@@ -138,6 +141,36 @@ class EventsService(
                 attendees = event.attendees.filter {
                     it.email != user.username
                 }
+            )
+        )
+    }
+
+    fun addCategoryToEvent(
+        id: String,
+        categoryRequest: CategoryRequest
+    ): EventEntity {
+        val event = eventsRepo.findByIdOrNull(id) ?: throw EventNotFoundException()
+        val category = categoryService.getCategoryByName(categoryRequest.name) ?: throw CategoryNotFoundException()
+        return eventsRepo.save(
+            event.copy(
+                categories = setOf(*event.categories.toTypedArray(), category).toList()
+            )
+        )
+    }
+
+    fun deleteCategoryFromEvent(
+        id: String,
+        categoryName: String
+    ): EventEntity {
+        val event = eventsRepo.findByIdOrNull(id) ?: throw EventNotFoundException()
+        val category = categoryService.getCategoryByName(categoryName) ?: throw CategoryNotFoundException()
+        return eventsRepo.save(
+            event.copy(
+                categories = categoryService.getCategoriesByNames(
+                    event.categories
+                        .filter { it != category }
+                        .map { it.name }
+                )
             )
         )
     }
