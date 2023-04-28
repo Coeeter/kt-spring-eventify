@@ -2,7 +2,6 @@ package com.nasportfolio.eventify.users
 
 import com.nasportfolio.eventify.dtos.PageDto
 import com.nasportfolio.eventify.dtos.PageDto.Companion.DEFAULT_SIZE
-import com.nasportfolio.eventify.events.exceptions.InvalidPageException
 import com.nasportfolio.eventify.events.models.entities.EventEntity
 import com.nasportfolio.eventify.images.ImageService
 import com.nasportfolio.eventify.security.SecurityProperties
@@ -12,8 +11,8 @@ import com.nasportfolio.eventify.users.models.UserEntity
 import com.nasportfolio.eventify.users.models.requests.DeleteUserRequest
 import com.nasportfolio.eventify.users.models.requests.UpdateUserRequest
 import com.nasportfolio.eventify.users.models.responses.UserDeletedResponse
+import com.nasportfolio.eventify.utils.EventifyPageRequest
 import org.springframework.data.domain.Page
-import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Pageable
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.security.core.userdetails.User
@@ -30,19 +29,15 @@ class UserService(
     private val imageService: ImageService
 ) : UserDetailsService {
     fun getUsers(name: String?, page: Int?, size: Int?): PageDto<UserEntity> {
-        try {
-            return PageDto.fromPage(
-                page = userRepo.searchByNameContainingIgnoreCase(
-                    name = name ?: "",
-                    pageable = PageRequest.of(
-                        (page ?: 1) - 1,
-                        size ?: DEFAULT_SIZE
-                    )
+        return PageDto.fromPage(
+            page = userRepo.searchByNameContainingIgnoreCase(
+                name = name ?: "",
+                pageable = EventifyPageRequest(
+                    (page ?: 1) - 1,
+                    size ?: DEFAULT_SIZE
                 )
             )
-        } catch (e: IllegalArgumentException) {
-            throw InvalidPageException("Invalid page or size given")
-        }
+        )
     }
 
     fun getUserById(id: String): UserEntity {

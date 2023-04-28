@@ -1,4 +1,4 @@
-package com.nasportfolio.eventify.events.exceptions
+package com.nasportfolio.eventify.utils
 
 import com.nasportfolio.eventify.exceptions.EventifyException
 import org.springframework.http.HttpStatus

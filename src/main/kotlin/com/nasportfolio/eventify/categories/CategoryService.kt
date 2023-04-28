@@ -8,9 +8,8 @@ import com.nasportfolio.eventify.dtos.PageDto
 import com.nasportfolio.eventify.dtos.PageDto.Companion.DEFAULT_SIZE
 import com.nasportfolio.eventify.dtos.PageDto.Companion.fromPage
 import com.nasportfolio.eventify.events.EventsRepo
-import com.nasportfolio.eventify.events.exceptions.InvalidPageException
 import com.nasportfolio.eventify.events.models.entities.EventEntity
-import org.springframework.data.domain.PageRequest
+import com.nasportfolio.eventify.utils.EventifyPageRequest
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 
@@ -24,19 +23,15 @@ class CategoryService(
     }
 
     fun getCategories(name: String?, page: Int?, size: Int?): PageDto<Category> {
-        try {
-            return PageDto.fromPage(
-                page = categoryRepo.findByNameContainingIgnoreCase(
-                    name = name ?: "",
-                    pageable = PageRequest.of(
-                        (page ?: 1) - 1,
-                        size ?: DEFAULT_SIZE
-                    )
+        return PageDto.fromPage(
+            page = categoryRepo.findByNameContainingIgnoreCase(
+                name = name ?: "",
+                pageable = EventifyPageRequest(
+                    page = (page ?: 1) - 1,
+                    size = size ?: DEFAULT_SIZE
                 )
             )
-        } catch (e: IllegalArgumentException) {
-            throw InvalidPageException("Invalid page or size given")
-        }
+        )
     }
 
     fun createCategory(request: CategoryRequest): Category {
@@ -53,20 +48,16 @@ class CategoryService(
         page: Int?,
         size: Int?
     ): PageDto<EventEntity> {
-        try {
-            val category = categoryRepo.findByName(name) ?: throw CategoryNotFoundException()
-            return fromPage(
-                eventsRepo.findByCategoriesIn(
-                    listOf(category),
-                    PageRequest.of(
-                        (page ?: 1) - 1,
-                        size ?: DEFAULT_SIZE
-                    )
+        val category = categoryRepo.findByName(name) ?: throw CategoryNotFoundException()
+        return fromPage(
+            eventsRepo.findByCategoriesIn(
+                listOf(category),
+                EventifyPageRequest(
+                    (page ?: 1) - 1,
+                    size ?: DEFAULT_SIZE
                 )
             )
-        } catch (e: IllegalArgumentException) {
-            throw InvalidPageException("Invalid page or size given")
-        }
+        )
     }
 
     fun updateCategory(id: String, request: CategoryRequest): Category {
