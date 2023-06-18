@@ -1,10 +1,12 @@
 package com.nasportfolio.eventify.exceptions
 
-import java.util.Date
+import org.springframework.http.HttpStatus
+import java.util.*
 
 data class ErrorResponse(
-    val timestamp: Date = Date(),
-    val message: String,
+    val timestamp: String = Date().toString(),
     val status: Int,
+    val error: String = HttpStatus.valueOf(status).reasonPhrase,
+    val message: String,
     val path: String
 )
