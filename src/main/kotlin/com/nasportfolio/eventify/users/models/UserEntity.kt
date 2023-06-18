@@ -15,11 +15,9 @@ data class UserEntity(
     val name: String,
     @Column(unique = true)
     val email: String,
-    @JsonIgnore
     val password: String,
     @CreatedDate
     val createdAt: Date = Date(),
-    @JsonIgnore
     @OneToMany(
         mappedBy = "user",
         cascade = [CascadeType.ALL],
@@ -27,10 +25,8 @@ data class UserEntity(
     )
     val passwordResetTokens: List<PasswordResetTokenEntity> = emptyList(),
     val imageUrl: String? = null,
-    @JsonIgnore
     @ManyToMany(mappedBy = "attendees")
     val attendingEvents: List<EventEntity> = emptyList(),
-    @JsonIgnore
     @OneToMany(
         mappedBy = "organiser",
         cascade = [CascadeType.ALL],

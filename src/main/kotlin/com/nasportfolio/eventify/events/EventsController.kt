@@ -2,11 +2,13 @@ package com.nasportfolio.eventify.events
 
 import com.nasportfolio.eventify.categories.models.requests.CategoryRequest
 import com.nasportfolio.eventify.dtos.PageDto
+import com.nasportfolio.eventify.events.models.dtos.EventDto
 import com.nasportfolio.eventify.events.models.entities.EventEntity
 import com.nasportfolio.eventify.events.models.requests.CreateEventRequest
 import com.nasportfolio.eventify.events.models.requests.FilterRequestParam
 import com.nasportfolio.eventify.events.models.requests.IncludeRequestParam
 import com.nasportfolio.eventify.users.models.UserEntity
+import com.nasportfolio.eventify.users.models.dtos.UserDto
 import org.springframework.format.annotation.DateTimeFormat
 import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.security.core.userdetails.User
@@ -24,12 +26,12 @@ class EventsController(
     fun getAllEvents(
         @RequestParam("page") page: Int?,
         @RequestParam("size") size: Int?
-    ): PageDto<EventEntity> {
+    ): PageDto<EventDto> {
         return eventsService.getAllEvents(page, size)
     }
 
     @GetMapping("/{id}")
-    fun getEventById(@PathVariable id: String): EventEntity {
+    fun getEventById(@PathVariable id: String): EventDto {
         return eventsService.getEventById(id)
     }
 
@@ -38,7 +40,7 @@ class EventsController(
         @PathVariable id: String,
         @RequestParam page: Int?,
         @RequestParam size: Int?
-    ): PageDto<UserEntity> {
+    ): PageDto<UserDto> {
         return eventsService.getAttendees(id, page, size)
     }
 
@@ -60,7 +62,7 @@ class EventsController(
         @RequestParam("category") categories: List<String>?,
         @RequestParam page: Int?,
         @RequestParam size: Int?,
-    ): PageDto<EventEntity> {
+    ): PageDto<EventDto> {
         return eventsService.filterEvents(
             FilterRequestParam(
                 query,
@@ -87,7 +89,7 @@ class EventsController(
     fun createEvent(
         @Valid @RequestBody request: CreateEventRequest,
         @AuthenticationPrincipal user: User
-    ): EventEntity {
+    ): EventDto {
         return eventsService.createEvent(request, user)
     }
 
@@ -95,7 +97,7 @@ class EventsController(
     fun addCategoryToEvent(
         @PathVariable id: String,
         @RequestBody categoryRequest: CategoryRequest
-    ): EventEntity {
+    ): EventDto {
         return eventsService.addCategoryToEvent(id, categoryRequest)
     }
 
@@ -103,7 +105,7 @@ class EventsController(
     fun deleteCategoryFromEvent(
         @PathVariable id: String,
         @PathVariable categoryName: String
-    ): EventEntity {
+    ): EventDto {
         return eventsService.deleteCategoryFromEvent(id, categoryName)
     }
 
@@ -121,5 +123,12 @@ class EventsController(
         @AuthenticationPrincipal user: User
     ) {
         return eventsService.deleteAttendee(id, user)
+    }
+
+    @DeleteMapping("/{id}")
+    fun deleteEvent(
+        @PathVariable id: String,
+    ) {
+        return eventsService.deleteEvent(id)
     }
 }

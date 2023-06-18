@@ -8,6 +8,8 @@ import com.nasportfolio.eventify.security.SecurityProperties
 import com.nasportfolio.eventify.users.exceptions.InvalidCredentialsException
 import com.nasportfolio.eventify.users.exceptions.UserNotFoundException
 import com.nasportfolio.eventify.users.models.UserEntity
+import com.nasportfolio.eventify.users.models.dtos.UserDto
+import com.nasportfolio.eventify.users.models.dtos.userDto
 import com.nasportfolio.eventify.users.models.requests.DeleteUserRequest
 import com.nasportfolio.eventify.users.models.requests.UpdateUserRequest
 import com.nasportfolio.eventify.users.models.responses.UserDeletedResponse
@@ -26,24 +28,25 @@ import org.springframework.stereotype.Service
 class UserService(
     private val userRepo: UserRepo,
     private val securityProperties: SecurityProperties,
-    private val imageService: ImageService
+    private val imageService: ImageService,
 ) : UserDetailsService {
-    fun getUsers(name: String?, page: Int?, size: Int?): PageDto<UserEntity> {
+    fun getUsers(name: String?, page: Int?, size: Int?): PageDto<UserDto> {
         return PageDto.fromPage(
             page = userRepo.searchByNameContainingIgnoreCase(
                 name = name ?: "",
                 pageable = EventifyPageRequest(
                     (page ?: 1) - 1,
-                    size ?: DEFAULT_SIZE
+                    size ?: DEFAULT_SIZE,
                 )
-            )
+            ),
+            transform = { it.userDto }
         )
     }
 
-    fun getUserById(id: String): UserEntity {
+    fun getUserById(id: String): UserDto {
         return userRepo.findByIdOrNull(
             id = id
-        ) ?: throw UserNotFoundException(
+        )?.userDto ?: throw UserNotFoundException(
             message = "User with id $id not found"
         )
     }
@@ -63,7 +66,7 @@ class UserService(
     fun updateUser(
         updateUserRequest: UpdateUserRequest,
         securityUser: User
-    ): UserEntity {
+    ): UserDto {
         val user = getUserByEmail(securityUser.username)
         updateUserRequest.name?.let {
             if (it.isNotBlank()) return@let
@@ -80,13 +83,13 @@ class UserService(
                 name = updateUserRequest.name ?: user.name,
                 imageUrl = updateUserRequest.image ?: user.imageUrl
             )
-        )
+        ).userDto
     }
 
     override fun loadUserByUsername(username: String?): UserDetails? {
         return try {
             val user = username?.let {
-                userRepo.findUserByEmail(email = it)
+                getUserByEmail(it)
             } ?: throw Exception()
             User(
                 user.email,
@@ -117,19 +120,19 @@ class UserService(
         return UserDeletedResponse(user.id)
     }
 
-    fun deleteImage(securityUser: User): UserEntity {
+    fun deleteImage(securityUser: User): UserDto {
         val user = getUserByEmail(securityUser.username)
         user.imageUrl?.let { imageService.deleteImage(it) }
-        return saveUser(user.copy(imageUrl = null))
+        return saveUser(user.copy(imageUrl = null)).userDto
     }
 
     fun getAttendeesOfEvent(
         eventEntity: EventEntity,
         pageable: Pageable
-    ): Page<UserEntity> {
+    ): Page<UserDto> {
         return userRepo.findByAttendingEventsContaining(
             eventEntity,
             pageable
-        )
+        ).map { it.userDto }
     }
 }

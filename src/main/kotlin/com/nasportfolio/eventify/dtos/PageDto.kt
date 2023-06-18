@@ -11,12 +11,15 @@ data class PageDto<T> private constructor(
     companion object {
         const val DEFAULT_SIZE = 20
 
-        fun <T> fromPage(page: Page<T>): PageDto<T> {
+        fun <T, R> fromPage(
+            page: Page<T>,
+            transform: (T) -> R = { it as R }
+        ): PageDto<R> {
             return PageDto(
                 currentPage = page.number + 1,
                 totalItems = page.totalElements,
                 totalPages = page.totalPages,
-                content = page.content
+                content = page.content.map(transform)
             )
         }
     }

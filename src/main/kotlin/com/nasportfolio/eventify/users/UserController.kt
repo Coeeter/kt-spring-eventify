@@ -2,6 +2,7 @@ package com.nasportfolio.eventify.users
 
 import com.nasportfolio.eventify.dtos.PageDto
 import com.nasportfolio.eventify.users.models.UserEntity
+import com.nasportfolio.eventify.users.models.dtos.UserDto
 import com.nasportfolio.eventify.users.models.requests.DeleteUserRequest
 import com.nasportfolio.eventify.users.models.requests.UpdateUserRequest
 import com.nasportfolio.eventify.users.models.responses.UserDeletedResponse
@@ -21,12 +22,12 @@ class UserController(
         @RequestParam("name") name: String?,
         @RequestParam("page") page: Int?,
         @RequestParam("size") size: Int?
-    ): PageDto<UserEntity> {
+    ): PageDto<UserDto> {
         return userService.getUsers(name, page, size)
     }
 
     @GetMapping("/{id}")
-    fun getUserById(@PathVariable("id") id: String): UserEntity {
+    fun getUserById(@PathVariable("id") id: String): UserDto {
         return userService.getUserById(id)
     }
 
@@ -34,7 +35,7 @@ class UserController(
     fun updateUser(
         @Valid @RequestBody request: UpdateUserRequest,
         @AuthenticationPrincipal user: User
-    ): UserEntity {
+    ): UserDto {
         return userService.updateUser(request, user)
     }
 
@@ -49,7 +50,7 @@ class UserController(
     @DeleteMapping("/images")
     fun deleteImage(
         @AuthenticationPrincipal user: User
-    ): UserEntity {
+    ): UserDto {
         return userService.deleteImage(user)
     }
 }

@@ -9,12 +9,14 @@ import com.nasportfolio.eventify.dtos.PageDto.Companion.fromPage
 import com.nasportfolio.eventify.events.exceptions.EventMaxAttendeeReached
 import com.nasportfolio.eventify.events.exceptions.EventNotFoundException
 import com.nasportfolio.eventify.events.exceptions.InvalidEventException
+import com.nasportfolio.eventify.events.models.dtos.EventDto
+import com.nasportfolio.eventify.events.models.dtos.eventDto
 import com.nasportfolio.eventify.events.models.entities.EventEntity
 import com.nasportfolio.eventify.events.models.entities.LocationEntity
 import com.nasportfolio.eventify.events.models.requests.CreateEventRequest
 import com.nasportfolio.eventify.events.models.requests.FilterRequestParam
 import com.nasportfolio.eventify.users.UserService
-import com.nasportfolio.eventify.users.models.UserEntity
+import com.nasportfolio.eventify.users.models.dtos.UserDto
 import com.nasportfolio.eventify.utils.EventifyPageRequest
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.security.core.userdetails.User
@@ -27,26 +29,27 @@ class EventsService(
     private val userService: UserService,
     private val categoryService: CategoryService,
 ) {
-    fun getAllEvents(page: Int?, size: Int?): PageDto<EventEntity> {
+    fun getAllEvents(page: Int?, size: Int?): PageDto<EventDto> {
         return fromPage(
-            eventsRepo.findByEndDateAfter(
+            page = eventsRepo.findByEndDateAfter(
                 pageable = EventifyPageRequest(
                     (page ?: 1) - 1,
                     size ?: DEFAULT_SIZE
                 )
-            )
+            ),
+            transform = { it.eventDto }
         )
     }
 
-    fun getEventById(id: String): EventEntity {
-        return eventsRepo.findByIdOrNull(id) ?: throw EventNotFoundException()
+    fun getEventById(id: String): EventDto {
+        return eventsRepo.findByIdOrNull(id)?.eventDto ?: throw EventNotFoundException()
     }
 
     fun filterEvents(
         filterRequestParam: FilterRequestParam?,
         page: Int?,
         size: Int?
-    ): PageDto<EventEntity> {
+    ): PageDto<EventDto> {
         val pageRequest = EventifyPageRequest(
             (page ?: 1) - 1,
             size ?: DEFAULT_SIZE
@@ -55,7 +58,8 @@ class EventsService(
             page = eventsRepo.filterEvents(
                 filterRequestParam,
                 pageRequest
-            )
+            ),
+            transform = { it.eventDto }
         )
     }
 
@@ -63,25 +67,26 @@ class EventsService(
         id: String?,
         page: Int?,
         size: Int?
-    ): PageDto<UserEntity> {
+    ): PageDto<UserDto> {
         val pageRequest = EventifyPageRequest(
             (page ?: 1) - 1,
             size ?: DEFAULT_SIZE
         )
         val event = eventsRepo.findByIdOrNull(id)
             ?: throw EventNotFoundException()
+        println(event.attendees)
         return fromPage(
             page = userService.getAttendeesOfEvent(
                 event,
                 pageRequest
-            )
+            ),
         )
     }
 
     fun createEvent(
         request: CreateEventRequest,
         securityUser: User,
-    ): EventEntity {
+    ): EventDto {
         val user = userService.getUserByEmail(securityUser.username)
         if (request.startDate.after(request.endDate)) {
             throw InvalidEventException("Start date should not be after end date")
@@ -105,7 +110,7 @@ class EventsService(
                 postalCode = request.location.postalCode
             ),
         )
-        return eventsRepo.save(eventEntity)
+        return eventsRepo.save(eventEntity).eventDto
     }
 
     fun createAttendee(id: String, user: User) {
@@ -114,9 +119,7 @@ class EventsService(
         val userEntity = userService.getUserByEmail(user.username)
         eventsRepo.save(
             event.copy(
-                attendees = event.attendees.toMutableList().apply {
-                    add(userEntity)
-                }
+                attendees = event.attendees + userEntity
             )
         )
     }
@@ -135,22 +138,22 @@ class EventsService(
     fun addCategoryToEvent(
         id: String,
         categoryRequest: CategoryRequest
-    ): EventEntity {
+    ): EventDto {
         val event = eventsRepo.findByIdOrNull(id) ?: throw EventNotFoundException()
-        val category = categoryService.getCategoryByName(categoryRequest.name) ?: throw CategoryNotFoundException()
+        val category = categoryService.getCategoryByName(categoryRequest.name)
         return eventsRepo.save(
             event.copy(
-                categories = setOf(*event.categories.toTypedArray(), category).toList()
+                categories = event.categories + category
             )
-        )
+        ).eventDto
     }
 
     fun deleteCategoryFromEvent(
         id: String,
         categoryName: String
-    ): EventEntity {
+    ): EventDto {
         val event = eventsRepo.findByIdOrNull(id) ?: throw EventNotFoundException()
-        val category = categoryService.getCategoryByName(categoryName) ?: throw CategoryNotFoundException()
+        val category = categoryService.getCategoryByName(categoryName)
         return eventsRepo.save(
             event.copy(
                 categories = categoryService.getCategoriesByNames(
@@ -159,6 +162,10 @@ class EventsService(
                         .map { it.name }
                 )
             )
-        )
+        ).eventDto
+    }
+
+    fun deleteEvent(id: String) {
+        return eventsRepo.deleteById(id)
     }
 }

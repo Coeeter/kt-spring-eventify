@@ -21,6 +21,7 @@ export default function ResetPassword({
   resetAt,
 }: ResetPasswordProps) {
   const token = useRouter().query.token as string;
+  const [isComplete, setIsComplete] = useState(false);
   const [isDisabled, setIsDisabled] = useState(
     disabled || resetAt != null || expiresAt < new Date()
   );
@@ -43,7 +44,7 @@ export default function ResetPassword({
         password,
       }),
     });
-    if (res.status == 200) setIsDisabled(true);
+    if (res.status == 200) setIsComplete(true);
   });
 
   useEffect(() => {
@@ -67,9 +68,11 @@ export default function ResetPassword({
           <p className="text-lg text-center">
             {isDisabled
               ? 'This link is invalid or has expired.'
+              : isComplete
+              ? 'Your password has been reset.'
               : 'Enter your new password below.'}
           </p>
-          {isDisabled ? null : (
+          {isDisabled || isComplete ? null : (
             <form onSubmit={onSubmit} className="flex flex-col gap-3 pt-3">
               <div className="w-full">
                 <input
@@ -85,7 +88,9 @@ export default function ResetPassword({
                   className="bg-slate-800 w-full text-slate-300 border border-slate-700 rounded-md p-2 outline-none focus:border-blue-700 active:border-blue-700 placeholder:text-slate-500"
                 />
                 {errors.password && (
-                  <p className="text-red-500 text-sm mt-1">{errors.password.message}</p>
+                  <p className="text-red-500 text-sm mt-1">
+                    {errors.password.message}
+                  </p>
                 )}
               </div>
               <div className="w-full">
@@ -122,6 +127,7 @@ export default function ResetPassword({
 }
 
 export const getServerSideProps: GetServerSideProps = async context => {
+  console.log('hello world');
   const { token } = context.query;
   const resetPasswordToken: ResetPasswordProps | null = await fetch(
     `http://localhost:8080/api/auth/token/${token}`
@@ -129,6 +135,7 @@ export const getServerSideProps: GetServerSideProps = async context => {
     if (res.status != 200) return null;
     return res.json();
   });
+  console.log(token);
   return {
     props: resetPasswordToken ?? { disabled: true },
   };

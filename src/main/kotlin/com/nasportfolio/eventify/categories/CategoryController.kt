@@ -1,8 +1,10 @@
 package com.nasportfolio.eventify.categories
 
 import com.nasportfolio.eventify.categories.models.Category
+import com.nasportfolio.eventify.categories.models.dtos.CategoryDto
 import com.nasportfolio.eventify.categories.models.requests.CategoryRequest
 import com.nasportfolio.eventify.dtos.PageDto
+import com.nasportfolio.eventify.events.models.dtos.EventDto
 import com.nasportfolio.eventify.events.models.entities.EventEntity
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
@@ -25,7 +27,7 @@ class CategoryController(
         @RequestParam name: String?,
         @RequestParam page: Int?,
         @RequestParam size: Int?,
-    ): PageDto<Category> {
+    ): PageDto<CategoryDto> {
         return categoryService.getCategories(name, page, size)
     }
 
@@ -34,14 +36,14 @@ class CategoryController(
         @PathVariable name: String,
         @RequestParam page: Int?,
         @RequestParam size: Int?
-    ): PageDto<EventEntity> {
+    ): PageDto<EventDto> {
         return categoryService.getCategoryEvents(name, page, size)
     }
 
     @PostMapping
     fun createCategory(
         @Valid @RequestBody request: CategoryRequest
-    ): Category {
+    ): CategoryDto {
         return categoryService.createCategory(request)
     }
 
@@ -49,7 +51,7 @@ class CategoryController(
     fun updateCategory(
         @PathVariable id: String,
         @Valid @RequestBody request: CategoryRequest
-    ): Category {
+    ): CategoryDto {
         return categoryService.updateCategory(id, request)
     }
 

@@ -1,9 +1,11 @@
 package com.nasportfolio.eventify.auth
 
+import com.nasportfolio.eventify.auth.models.dtos.PasswordResetTokenDto
 import com.nasportfolio.eventify.auth.models.entities.PasswordResetTokenEntity
 import com.nasportfolio.eventify.auth.models.requests.*
 import com.nasportfolio.eventify.auth.models.responses.TokenResponse
 import com.nasportfolio.eventify.users.models.UserEntity
+import com.nasportfolio.eventify.users.models.dtos.UserDto
 import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.security.core.userdetails.User
 import org.springframework.validation.annotation.Validated
@@ -33,7 +35,7 @@ class AuthController(
     }
 
     @GetMapping("/token/{token}")
-    fun getTokenDetails(@PathVariable("token") token: String): PasswordResetTokenEntity {
+    fun getTokenDetails(@PathVariable("token") token: String): PasswordResetTokenDto {
         return authService.getTokenDetails(token)
     }
 
@@ -46,7 +48,7 @@ class AuthController(
     fun changePassword(
         @Valid @RequestBody request: ChangePasswordRequest,
         @AuthenticationPrincipal user: User
-    ): UserEntity {
+    ) {
         return authService.changePassword(request, user)
     }
 }

@@ -1,6 +1,5 @@
 package com.nasportfolio.eventify.events.models.entities
 
-import com.fasterxml.jackson.annotation.JsonIgnore
 import com.nasportfolio.eventify.categories.models.Category
 import com.nasportfolio.eventify.users.models.UserEntity
 import java.util.*
@@ -20,7 +19,6 @@ data class EventEntity(
     val endDate: Date,
     val price: Double,
     val image: String,
-    @JsonIgnore
     @ManyToMany
     @JoinTable(
         name = "event_attendees",

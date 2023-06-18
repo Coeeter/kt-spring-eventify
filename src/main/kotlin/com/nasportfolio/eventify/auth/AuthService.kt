@@ -2,6 +2,8 @@ package com.nasportfolio.eventify.auth
 
 import com.nasportfolio.eventify.auth.exceptions.EmailAlreadyInUseException
 import com.nasportfolio.eventify.auth.exceptions.InvalidTokenException
+import com.nasportfolio.eventify.auth.models.dtos.PasswordResetTokenDto
+import com.nasportfolio.eventify.auth.models.dtos.passwordResetTokenDto
 import com.nasportfolio.eventify.auth.models.entities.PasswordResetTokenEntity
 import com.nasportfolio.eventify.auth.models.requests.*
 import com.nasportfolio.eventify.auth.models.responses.TokenResponse
@@ -10,11 +12,13 @@ import com.nasportfolio.eventify.security.jwt.JwtService
 import com.nasportfolio.eventify.users.UserService
 import com.nasportfolio.eventify.users.exceptions.UserNotFoundException
 import com.nasportfolio.eventify.users.models.UserEntity
+import com.nasportfolio.eventify.users.models.dtos.userDto
 import org.springframework.security.authentication.AuthenticationManager
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
 import org.springframework.security.core.userdetails.User
 import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.stereotype.Service
+import java.io.File
 import java.util.*
 
 @Service
@@ -80,16 +84,31 @@ class AuthService(
             passwordResetTokenRepo.save(it)
         }
         val url = "${System.getenv("CLIENT_URL")}/reset-password/${token.token}"
+        val html = this::class.java
+            .getResourceAsStream("/static/email-template.html")!!
+            .bufferedReader()
+            .readText()
+            .replace("{PASSWORD_RESET_LINK}", url)
+        val inlineImage = EmailService.InlineImage(
+            image = File(
+                this::class.java
+                    .getResource("/static/images/lock.png")!!
+                    .file
+            ),
+            contentId = "lock"
+        )
         emailService.sendPasswordResetEmail(
             to = user.email,
-            url = url
+            subject = "Eventify: Reset your password",
+            html = html,
+            inlineImages = listOf(inlineImage)
         )
     }
 
-    fun getTokenDetails(token: String): PasswordResetTokenEntity {
+    fun getTokenDetails(token: String): PasswordResetTokenDto {
         return passwordResetTokenRepo.findByToken(
             token = token
-        ) ?: throw InvalidTokenException(
+        )?.passwordResetTokenDto ?: throw InvalidTokenException(
             message = "Invalid token provided"
         )
     }
@@ -116,10 +135,10 @@ class AuthService(
     fun changePassword(
         request: ChangePasswordRequest,
         securityUser: User
-    ): UserEntity {
+    ) {
         val user = userService.getUserByEmail(securityUser.username)
-        return userService.saveUser(
+        userService.saveUser(
             user.copy(password = passwordEncoder.encode(request.password))
-        )
+        ).userDto
     }
 }
