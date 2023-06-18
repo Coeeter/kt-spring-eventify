@@ -1,14 +1,11 @@
 package com.nasportfolio.eventify.events
 
 import com.nasportfolio.eventify.categories.CategoryService
-import com.nasportfolio.eventify.categories.exceptions.CategoryNotFoundException
 import com.nasportfolio.eventify.categories.models.requests.CategoryRequest
 import com.nasportfolio.eventify.dtos.PageDto
 import com.nasportfolio.eventify.dtos.PageDto.Companion.DEFAULT_SIZE
 import com.nasportfolio.eventify.dtos.PageDto.Companion.fromPage
-import com.nasportfolio.eventify.events.exceptions.EventMaxAttendeeReached
-import com.nasportfolio.eventify.events.exceptions.EventNotFoundException
-import com.nasportfolio.eventify.events.exceptions.InvalidEventException
+import com.nasportfolio.eventify.events.exceptions.*
 import com.nasportfolio.eventify.events.models.dtos.EventDto
 import com.nasportfolio.eventify.events.models.dtos.eventDto
 import com.nasportfolio.eventify.events.models.entities.EventEntity
@@ -17,6 +14,7 @@ import com.nasportfolio.eventify.events.models.requests.CreateEventRequest
 import com.nasportfolio.eventify.events.models.requests.FilterRequestParam
 import com.nasportfolio.eventify.users.UserService
 import com.nasportfolio.eventify.users.models.dtos.UserDto
+import com.nasportfolio.eventify.users.models.dtos.userDto
 import com.nasportfolio.eventify.utils.EventifyPageRequest
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.security.core.userdetails.User
@@ -64,22 +62,19 @@ class EventsService(
     }
 
     fun getAttendees(
-        id: String?,
+        id: String,
         page: Int?,
         size: Int?
     ): PageDto<UserDto> {
-        val pageRequest = EventifyPageRequest(
-            (page ?: 1) - 1,
-            size ?: DEFAULT_SIZE
-        )
-        val event = eventsRepo.findByIdOrNull(id)
-            ?: throw EventNotFoundException()
-        println(event.attendees)
         return fromPage(
-            page = userService.getAttendeesOfEvent(
-                event,
-                pageRequest
+            page = eventsRepo.findEventAttendeesById(
+                id = id,
+                pageable = EventifyPageRequest(
+                    (page ?: 1) - 1,
+                    size ?: DEFAULT_SIZE
+                )
             ),
+            transform = { it.userDto }
         )
     }
 
@@ -117,6 +112,8 @@ class EventsService(
         val event = eventsRepo.findByIdOrNull(id) ?: throw EventNotFoundException()
         if (event.attendees.size == event.maxAttendees) throw EventMaxAttendeeReached()
         val userEntity = userService.getUserByEmail(user.username)
+        if (userEntity == event.organiser) throw AttendeeIsOrganiserException()
+        if (event.attendees.contains(userEntity)) throw AttendeeAlreadyExistsException()
         eventsRepo.save(
             event.copy(
                 attendees = event.attendees + userEntity
@@ -165,7 +162,10 @@ class EventsService(
         ).eventDto
     }
 
-    fun deleteEvent(id: String) {
+    fun deleteEvent(id: String, user: User) {
+        val event = eventsRepo.findByIdOrNull(id) ?: throw EventNotFoundException()
+        val user = userService.getUserByEmail(user.username)
+        if (event.organiser != user) throw UnauthorizedEventAccessException()
         return eventsRepo.deleteById(id)
     }
 }

@@ -60,10 +60,11 @@ class SecurityConfig(
 
     @Bean
     fun authenticationEntryPoint(): AuthenticationEntryPoint {
-        return AuthenticationEntryPoint { _, response, exception ->
+        return AuthenticationEntryPoint { request, response, exception ->
             val body = ErrorResponse(
                 message = exception.message ?: "Invalid token provided",
-                status = HttpStatus.UNAUTHORIZED.value()
+                status = HttpStatus.UNAUTHORIZED.value(),
+                path = request.requestURI
             )
             val os = response.run {
                 contentType = MediaType.APPLICATION_JSON_VALUE

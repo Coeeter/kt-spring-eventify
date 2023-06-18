@@ -128,7 +128,8 @@ class EventsController(
     @DeleteMapping("/{id}")
     fun deleteEvent(
         @PathVariable id: String,
+        @AuthenticationPrincipal user: User
     ) {
-        return eventsService.deleteEvent(id)
+        return eventsService.deleteEvent(id, user)
     }
 }

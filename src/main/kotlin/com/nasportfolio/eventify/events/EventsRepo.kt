@@ -1,15 +1,19 @@
 package com.nasportfolio.eventify.events
 
 import com.nasportfolio.eventify.categories.models.Category
+import com.nasportfolio.eventify.events.exceptions.EventNotFoundException
 import com.nasportfolio.eventify.events.models.entities.EventEntity
 import com.nasportfolio.eventify.events.models.entities.LocationEntity
 import com.nasportfolio.eventify.events.models.requests.FilterRequestParam
 import com.nasportfolio.eventify.events.models.requests.IncludeRequestParam
+import com.nasportfolio.eventify.users.models.UserEntity
 import org.springframework.data.domain.Page
+import org.springframework.data.domain.PageImpl
 import org.springframework.data.domain.Pageable
 import org.springframework.data.jpa.domain.Specification
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor
+import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Repository
 import java.awt.Point
 import java.util.*
@@ -19,6 +23,20 @@ import javax.persistence.criteria.Predicate
 interface EventsRepo : JpaRepository<EventEntity, String>, JpaSpecificationExecutor<EventEntity> {
     fun findByEndDateAfter(ends: Date = Date(), pageable: Pageable): Page<EventEntity>
     fun findByCategoriesIn(categories: List<Category>, pageable: Pageable): Page<EventEntity>
+}
+
+fun EventsRepo.findEventAttendeesById(
+    id: String,
+    pageable: Pageable
+): Page<UserEntity> {
+    val event = findByIdOrNull(id) ?: throw EventNotFoundException()
+    val startIndex = pageable.pageNumber * pageable.pageSize
+    val endIndex = startIndex + pageable.pageSize
+    val attendees = event.attendees.subList(
+        startIndex.coerceAtMost(event.attendees.size),
+        endIndex.coerceAtMost(event.attendees.size)
+    )
+    return PageImpl(attendees, pageable, event.attendees.size.toLong())
 }
 
 fun EventsRepo.filterEvents(
