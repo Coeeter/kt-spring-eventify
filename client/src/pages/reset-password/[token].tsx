@@ -1,13 +1,12 @@
 import { GetServerSideProps } from 'next';
 import Head from 'next/head';
-import { useRouter } from 'next/router';
 import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 
 type ResetPasswordProps = {
   expiresAt: Date;
-  resetAt: Date | null;
   disabled: boolean;
+  token: string;
 };
 
 type ResetPasswordForm = {
@@ -18,12 +17,11 @@ type ResetPasswordForm = {
 export default function ResetPassword({
   disabled,
   expiresAt,
-  resetAt,
+  token,
 }: ResetPasswordProps) {
-  const token = useRouter().query.token as string;
   const [isComplete, setIsComplete] = useState(false);
   const [isDisabled, setIsDisabled] = useState(
-    disabled || resetAt != null || expiresAt < new Date()
+    disabled || expiresAt < new Date()
   );
 
   const {
@@ -127,7 +125,6 @@ export default function ResetPassword({
 }
 
 export const getServerSideProps: GetServerSideProps = async context => {
-  console.log('hello world');
   const { token } = context.query;
   const resetPasswordToken: ResetPasswordProps | null = await fetch(
     `http://localhost:8080/api/auth/token/${token}`
@@ -135,7 +132,6 @@ export const getServerSideProps: GetServerSideProps = async context => {
     if (res.status != 200) return null;
     return res.json();
   });
-  console.log(token);
   return {
     props: resetPasswordToken ?? { disabled: true },
   };
